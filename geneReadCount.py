@@ -153,8 +153,7 @@ if __name__ == "__main__":
 		index.setArg(0,"results/07.18.2012/%s.unique.sorted.pseudo.bam"%tissue)
 		
 		stats.setArg(0,"results/07.18.2012/%s.unique.sorted.pseudo.bam"%tissue)
-		
-		countReads.setStdout("results/07.18.2012/%s.pseudo.txt"%tissue)
+		stats.setStdout("results/07.18.2012/%s.pseudo.txt"%tissue)
 	
 		pipeline.execute()
 		
@@ -166,7 +165,6 @@ if __name__ == "__main__":
 		index.setArg(0,"results/07.18.2012/%s.unique.sorted.refseq.bam"%tissue)
 		
 		stats.setArg(0,"results/07.18.2012/%s.unique.sorted.refseq.bam"%tissue)
-		
-		countReads.setStdout("results/07.18.2012/%s.refseq.txt"%tissue)
+		stats.setStdout("results/07.18.2012/%s.refseq.txt"%tissue)
 	
 		pipeline.execute()
