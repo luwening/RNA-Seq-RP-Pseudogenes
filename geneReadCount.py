@@ -119,21 +119,54 @@ if __name__ == "__main__":
 	intersect = pipeline.addCommand("intersectBed")
 	intersect.addOption("-abam",True)
 	intersect.addOption("-b",True)
-	intersect.setOptionArg("-abam","alignments/adrenal/adrenal.unique.sorted.bam")
-	intersect.setOptionArg("-b","genes/pseudogenes.bed")
-	intersect.setStdout("results/07.17.2012/adrenal.unique.sorted.bam")
+	#intersect.setOptionArg("-abam","alignments/adrenal/adrenal.unique.sorted.bam")
+	#intersect.setOptionArg("-b","genes/pseudogenes.bed")
+	#intersect.setStdout("results/07.17.2012/adrenal.unique.sorted.bam")
 	#print intersect #1) intersectBed -abam <option1> -b <option2>
 	
 	index = pipeline.addCommand("samtools index")
 	index.addArg()
-	index.setArg(0,"results/07.17.2012/adrenal.unique.sorted.bam")
+	#index.setArg(0,"results/07.17.2012/adrenal.unique.sorted.bam")
 	#print index #2) samtools sort <arg1>
 	
 	stats = pipeline.addCommand("samtools idxstats")
 	stats.addArg()
 	countReads = pipeline.addCommand("awk '{SUM+=$3}END{print SUM}'", False) #False: not added to steps
 	stats.setPipe(countReads)	
-	stats.setArg(0,"results/07.17.2012/adrenal.unique.sorted.bam")
+	#stats.setArg(0,"results/07.17.2012/adrenal.unique.sorted.bam")
 	#print stats #3) samtools idxstats <arg1> | awk '{SUM+=$3}END{print SUM}'
 	
-	pipeline.execute()
+	import os
+	from config import tissues,project_root
+	
+	os.chdir(project_root)
+	
+	for tissue in range(len(tissues)-1):
+		tissues.append(tissues[tissue+1]+".hg18")
+	
+	for tissue in tissues[1:]:
+		# Composite Pseudogenes
+		intersect.setOptionArg("-abam","alignments/%s/%s.unique.sorted.bam" % (tissue,tissue))
+		intersect.setOptionArg("-b","genes/pseudogenes.bed")
+		intersect.setStdout("results/07.18.2012/%s.unique.sorted.pseudo.bam"%tissue)
+		
+		index.setArg(0,"results/07.18.2012/%s.unique.sorted.pseudo.bam"%tissue)
+		
+		stats.setArg(0,"results/07.18.2012/%s.unique.sorted.pseudo.bam"%tissue)
+		
+		countReads.setStdout("results/07.18.2012/%s.pseudo.txt"%tissue)
+	
+		pipeline.execute()
+		
+		# Composite Refseq
+		intersect.setOptionArg("-abam","alignments/%s/%s.unique.sorted.bam" % (tissue,tissue))
+		intersect.setOptionArg("-b","genes/refseq.bed")
+		intersect.setStdout("results/07.18.2012/%s.unique.sorted.refseq.bam"%tissue)
+		
+		index.setArg(0,"results/07.18.2012/%s.unique.sorted.refseq.bam"%tissue)
+		
+		stats.setArg(0,"results/07.18.2012/%s.unique.sorted.refseq.bam"%tissue)
+		
+		countReads.setStdout("results/07.18.2012/%s.refseq.txt"%tissue)
+	
+		pipeline.execute()
